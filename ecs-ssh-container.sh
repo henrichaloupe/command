@@ -18,7 +18,7 @@ do
     esac
 done
 
-clusters=`aws ecs list-clusters --profile $profile --output json | jq -r '.clusterArns[]' | sed 's/.*\///g'`
+clusters=`aws ecs list-clusters --profile $profile --output json | jq -r '.clusterArns[]' | sed 's/.*\///g' | grep cluster`
 
 options=($clusters)
 if [ ${#options[@]} -eq 1 ] 
@@ -63,7 +63,7 @@ else
     done
 fi
 
-container=`aws ecs  describe-tasks --profile $profile --tasks $task --cluster $cluster | jq '.tasks[].overrides.containerOverrides[].name' | sed 's/"//g'`
+container=`aws ecs  describe-tasks --profile $profile --tasks $task --cluster $cluster | jq '.tasks[].overrides.containerOverrides[].name' | grep -v log_router | grep -v datadog | sed 's/"//g'`
 
 echo --------------------
 echo  Cluster : $cluster
@@ -74,7 +74,7 @@ echo --------------------
 
 
 aws ecs execute-command \
-    --profile preprod  \
+    --profile $profile  \
     --cluster $cluster   \
     --task $task   \
     --container $container   \
